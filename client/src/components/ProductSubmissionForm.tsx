@@ -27,6 +27,8 @@ export function ProductSubmissionForm({ contractId, onSuccess }: ProductSubmissi
   });
   const [designImage, setDesignImage] = useState<File | null>(null);
 
+  const createSubmissionMutation = trpc.approvals.createSubmission.useMutation();
+
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
@@ -46,14 +48,16 @@ export function ProductSubmissionForm({ contractId, onSuccess }: ProductSubmissi
       return;
     }
 
-    if (!designImage) {
-      toast.error("Please upload a design image");
-      return;
-    }
-
     setIsLoading(true);
     try {
-      // TODO: Implement file upload to S3 and create submission
+      // Create product submission via tRPC
+      const submission = await createSubmissionMutation.mutateAsync({
+        contractId,
+        itemNumber: formData.itemNumber,
+        productName: formData.licensedProduct,
+        description: formData.notes,
+      });
+
       toast.success("Product submission created successfully");
       setFormData({
         itemNumber: "",
@@ -67,6 +71,7 @@ export function ProductSubmissionForm({ contractId, onSuccess }: ProductSubmissi
       setDesignImage(null);
       onSuccess?.();
     } catch (error) {
+      console.error("Error creating submission:", error);
       toast.error("Failed to create product submission");
     } finally {
       setIsLoading(false);
@@ -178,7 +183,7 @@ export function ProductSubmissionForm({ contractId, onSuccess }: ProductSubmissi
 
           {/* Design Image Upload */}
           <div className="space-y-2">
-            <Label>Design Image *</Label>
+            <Label>Design Image</Label>
             <div className="border-2 border-dashed rounded-lg p-8 text-center hover:bg-accent cursor-pointer transition">
               <input
                 type="file"
@@ -225,8 +230,8 @@ export function ProductSubmissionForm({ contractId, onSuccess }: ProductSubmissi
             <Button type="button" variant="outline">
               Cancel
             </Button>
-            <Button type="submit" disabled={isLoading}>
-              {isLoading ? "Submitting..." : "Submit for Review"}
+            <Button type="submit" disabled={isLoading || createSubmissionMutation.isPending}>
+              {isLoading || createSubmissionMutation.isPending ? "Submitting..." : "Submit for Review"}
             </Button>
           </div>
         </form>

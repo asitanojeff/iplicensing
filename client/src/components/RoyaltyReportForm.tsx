@@ -7,6 +7,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Plus, Trash2, AlertCircle } from "lucide-react";
 import { toast } from "sonner";
+import { trpc } from "@/lib/trpc";
+import { Decimal } from "decimal.js";
 
 interface LineItem {
   id: string;
@@ -32,6 +34,9 @@ export function RoyaltyReportForm({ contractId, quarter, year, onSuccess }: Roya
   const [exchangeRate, setExchangeRate] = useState("1.0");
   const [lineItems, setLineItems] = useState<LineItem[]>([]);
   const [newItem, setNewItem] = useState<Partial<LineItem>>({});
+  const [currency, setCurrency] = useState("USD");
+
+  const submitReportMutation = trpc.royalties.submitReport.useMutation();
 
   const calculateTotals = () => {
     const totalRetail = lineItems
@@ -94,12 +99,28 @@ export function RoyaltyReportForm({ contractId, quarter, year, onSuccess }: Roya
     setIsLoading(true);
     try {
       const totals = calculateTotals();
-      // TODO: Submit royalty report
+      
+      // Submit royalty report via tRPC
+      await submitReportMutation.mutateAsync({
+        contractId,
+        quarter: quarter as "Q1" | "Q2" | "Q3" | "Q4",
+        year,
+        currency,
+        items: lineItems.map(item => ({
+          itemNumber: item.itemNumber,
+          unitsSold: new Decimal(item.unitsSold),
+          unitPrice: new Decimal(item.unitPrice),
+          royaltyRate: new Decimal(item.royaltyRate),
+        })),
+        exchangeRate: new Decimal(exchangeRate),
+      });
+
       toast.success("Royalty report submitted successfully");
       setLineItems([]);
       setExchangeRate("1.0");
       onSuccess?.();
     } catch (error) {
+      console.error("Error submitting report:", error);
       toast.error("Failed to submit royalty report");
     } finally {
       setIsLoading(false);
@@ -118,20 +139,38 @@ export function RoyaltyReportForm({ contractId, quarter, year, onSuccess }: Roya
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-6">
-          {/* Exchange Rate */}
-          <div className="space-y-2">
-            <Label htmlFor="exchangeRate">Exchange Rate (Local Currency to USD)</Label>
-            <Input
-              id="exchangeRate"
-              type="number"
-              step="0.0001"
-              value={exchangeRate}
-              onChange={(e) => setExchangeRate(e.target.value)}
-              placeholder="1.0"
-            />
-            <p className="text-xs text-muted-foreground">
-              Use end-of-quarter exchange rate (e.g., last day of {quarter})
-            </p>
+          {/* Currency & Exchange Rate */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="currency">Currency</Label>
+              <Select value={currency} onValueChange={setCurrency}>
+                <SelectTrigger id="currency">
+                  <SelectValue placeholder="Select currency" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="USD">USD</SelectItem>
+                  <SelectItem value="EUR">EUR</SelectItem>
+                  <SelectItem value="GBP">GBP</SelectItem>
+                  <SelectItem value="JPY">JPY</SelectItem>
+                  <SelectItem value="CNY">CNY</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="exchangeRate">Exchange Rate (to USD)</Label>
+              <Input
+                id="exchangeRate"
+                type="number"
+                step="0.0001"
+                value={exchangeRate}
+                onChange={(e) => setExchangeRate(e.target.value)}
+                placeholder="1.0"
+              />
+              <p className="text-xs text-muted-foreground">
+                Use end-of-quarter exchange rate (e.g., last day of {quarter})
+              </p>
+            </div>
           </div>
 
           {/* Line Items */}
@@ -263,8 +302,8 @@ export function RoyaltyReportForm({ contractId, quarter, year, onSuccess }: Roya
             <Button type="button" variant="outline">
               Cancel
             </Button>
-            <Button type="submit" disabled={isLoading || lineItems.length === 0}>
-              {isLoading ? "Submitting..." : "Submit Report"}
+            <Button type="submit" disabled={isLoading || submitReportMutation.isPending || lineItems.length === 0}>
+              {isLoading || submitReportMutation.isPending ? "Submitting..." : "Submit Report"}
             </Button>
           </div>
         </form>

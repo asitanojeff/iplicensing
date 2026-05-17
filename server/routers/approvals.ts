@@ -8,6 +8,7 @@ export const approvalsRouter = router({
     .input(
       z.object({
         contractId: z.number(),
+        itemNumber: z.string().optional(),
         productName: z.string(),
         description: z.string().optional(),
       })
@@ -20,11 +21,14 @@ export const approvalsRouter = router({
       return await approvals.createProductSubmission({
         contractId: input.contractId,
         licenseeId: ctx.user.id,
+        itemNumber: input.itemNumber || `SKU-${Date.now()}`,
+        licensedProductId: 1, // Default - should come from contract terms
         productName: input.productName,
         description: input.description,
         currentStage: "concept",
+        status: "in_progress",
         createdAt: new Date(),
-        lastUpdated: new Date(),
+        updatedAt: new Date(),
       });
     }),
 
@@ -182,6 +186,7 @@ export const approvalsRouter = router({
       z.object({
         submissionId: z.number(),
         stage: z.enum(["concept", "pre_production", "final_product", "market_approval"]),
+        fileName: z.string().optional(),
         storageUrl: z.string(),
         fileSize: z.number(),
         mimeType: z.string(),
@@ -195,6 +200,7 @@ export const approvalsRouter = router({
       return await approvals.uploadSubmissionFile({
         submissionId: input.submissionId,
         stage: input.stage,
+        fileName: input.fileName || input.storageUrl.split('/').pop() || 'unknown',
         storageUrl: input.storageUrl,
         storageKey: input.storageUrl.split('/').pop() || 'unknown',
         fileSize: input.fileSize,

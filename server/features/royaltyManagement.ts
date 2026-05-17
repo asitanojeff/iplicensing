@@ -136,7 +136,7 @@ export async function getRoyaltyCalculations(reportId: number) {
   return await db
     .select()
     .from(royaltyCalculations)
-    .where(eq(royaltyCalculations.royaltyReportId, reportId));
+    .where(eq(royaltyCalculations.reportId, reportId));
 }
 
 /**
