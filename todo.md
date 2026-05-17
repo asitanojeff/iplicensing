@@ -26,6 +26,13 @@
 - [ ] Build user management interface for admins to assign roles and permissions
 - [x] Implement permission checks on all sensitive operations
 
+## Phase 2.5: Database Migration Fixes (NEW)
+- [x] Fix ip_assets table - add missing category, status columns
+- [x] Fix contracts table - add missing description, storage_key, storage_url columns
+- [x] Fix approval_comments table - rename columns and add commented_by
+- [x] Fix contract_terms table - add missing payment_terms, created_at columns
+- [x] Verify all 102 tests passing after migrations
+
 ## Phase 3: IP Art Bank Management
 - [x] Build file upload system with folder structure support
 - [x] Implement version control for all assets
@@ -46,7 +53,7 @@
 
 ## Phase 5: Product Approval Workflow
 - [x] Implement 4-stage approval pipeline (Concept → Pre-Prod → Final → Market)
-- [ ] Build submission form for licensees (concept designs, packaging, marketing materials, samples)
+- [x] Build submission form for licensees (concept designs, packaging, marketing materials, samples) - WIRED TO BACKEND
 - [x] Create review interface for licensor/reviewer team
 - [x] Implement comment system for feedback and revision requests
 - [x] Build approval tracking and history
@@ -54,7 +61,7 @@
 - [x] Implement revision request workflow with resubmission capability
 
 ## Phase 6: Royalty Report Management
-- [ ] Build quarterly royalty report submission form for licensees
+- [x] Build quarterly royalty report submission form for licensees - WIRED TO BACKEND
 - [x] Implement auto-calculation of royalties based on contract terms
 - [x] Create MG (Minimum Guarantee) recoupment tracking
 - [x] Build excess royalty invoice generation system

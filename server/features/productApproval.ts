@@ -357,7 +357,7 @@ export async function resubmitAfterRevision(submissionId: number, stage: Approva
 
   // Update submission
   await updateProductSubmission(submissionId, {
-    lastUpdated: new Date(),
+    updatedAt: new Date(),
   });
 }
 

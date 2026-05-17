@@ -19,6 +19,7 @@ export function ProductSubmissionForm({ contractId, onSuccess }: ProductSubmissi
   const [formData, setFormData] = useState({
     itemNumber: "",
     licensedProduct: "",
+    productName: "",
     suggestedRetailPrice: "",
     suggestedWholesalePrice: "",
     targetLaunchDate: "",
@@ -43,25 +44,34 @@ export function ProductSubmissionForm({ contractId, onSuccess }: ProductSubmissi
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!formData.itemNumber || !formData.licensedProduct || !formData.targetLaunchDate || !formData.targetQuantity) {
+    if (!formData.itemNumber || !formData.licensedProduct || !formData.productName) {
       toast.error("Please fill in all required fields");
       return;
     }
 
     setIsLoading(true);
     try {
-      // Create product submission via tRPC
+      // Create product submission via tRPC with all fields
       const submission = await createSubmissionMutation.mutateAsync({
         contractId,
         itemNumber: formData.itemNumber,
-        productName: formData.licensedProduct,
+        productName: formData.productName,
         description: formData.notes,
+        suggestedRetailPrice: formData.suggestedRetailPrice || undefined,
+        suggestedWholesalePrice: formData.suggestedWholesalePrice || undefined,
+        targetLaunchDate: formData.targetLaunchDate || undefined,
+        targetQuantity: formData.targetQuantity ? parseInt(formData.targetQuantity) : undefined,
+        notes: formData.notes,
+        // Design image URL would be set after file upload
+        designImageUrl: undefined,
+        designImageStorageKey: undefined,
       });
 
       toast.success("Product submission created successfully");
       setFormData({
         itemNumber: "",
         licensedProduct: "",
+        productName: "",
         suggestedRetailPrice: "",
         suggestedWholesalePrice: "",
         targetLaunchDate: "",
@@ -88,7 +98,7 @@ export function ProductSubmissionForm({ contractId, onSuccess }: ProductSubmissi
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-6">
-          {/* Item Number */}
+          {/* Item Number & Product Name */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="itemNumber">Item Number (SKU) *</Label>
@@ -103,28 +113,40 @@ export function ProductSubmissionForm({ contractId, onSuccess }: ProductSubmissi
               <p className="text-xs text-muted-foreground">Must match your royalty report</p>
             </div>
 
-            {/* Licensed Product */}
             <div className="space-y-2">
-              <Label htmlFor="licensedProduct">Licensed Product *</Label>
-              <Select value={formData.licensedProduct} onValueChange={(value) => setFormData(prev => ({ ...prev, licensedProduct: value }))}>
-                <SelectTrigger id="licensedProduct">
-                  <SelectValue placeholder="Select product category" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="plush">Kidult & Kids Premium Plush</SelectItem>
-                  <SelectItem value="baby">Baby Essentials</SelectItem>
-                  <SelectItem value="travel">Travel Products</SelectItem>
-                  <SelectItem value="stationery">Stationery</SelectItem>
-                  <SelectItem value="accessories">Phone Accessories</SelectItem>
-                </SelectContent>
-              </Select>
+              <Label htmlFor="productName">Product Name *</Label>
+              <Input
+                id="productName"
+                name="productName"
+                placeholder="e.g., Premium Plush Toy"
+                value={formData.productName}
+                onChange={handleInputChange}
+                required
+              />
             </div>
+          </div>
+
+          {/* Licensed Product Category */}
+          <div className="space-y-2">
+            <Label htmlFor="licensedProduct">Licensed Product Category *</Label>
+            <Select value={formData.licensedProduct} onValueChange={(value) => setFormData(prev => ({ ...prev, licensedProduct: value }))}>
+              <SelectTrigger id="licensedProduct">
+                <SelectValue placeholder="Select product category" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="plush">Kidult & Kids Premium Plush</SelectItem>
+                <SelectItem value="baby">Baby Essentials</SelectItem>
+                <SelectItem value="travel">Travel Products</SelectItem>
+                <SelectItem value="stationery">Stationery</SelectItem>
+                <SelectItem value="accessories">Phone Accessories</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
 
           {/* Pricing */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="suggestedRetailPrice">Suggested Retail Price (USD) *</Label>
+              <Label htmlFor="suggestedRetailPrice">Suggested Retail Price (USD)</Label>
               <Input
                 id="suggestedRetailPrice"
                 name="suggestedRetailPrice"
@@ -133,7 +155,6 @@ export function ProductSubmissionForm({ contractId, onSuccess }: ProductSubmissi
                 step="0.01"
                 value={formData.suggestedRetailPrice}
                 onChange={handleInputChange}
-                required
               />
             </div>
 
@@ -155,19 +176,18 @@ export function ProductSubmissionForm({ contractId, onSuccess }: ProductSubmissi
           {/* Timeline & Quantity */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="targetLaunchDate">Target Launch Date *</Label>
+              <Label htmlFor="targetLaunchDate">Target Launch Date</Label>
               <Input
                 id="targetLaunchDate"
                 name="targetLaunchDate"
                 type="date"
                 value={formData.targetLaunchDate}
                 onChange={handleInputChange}
-                required
               />
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="targetQuantity">Estimated Production Quantity *</Label>
+              <Label htmlFor="targetQuantity">Estimated Production Quantity</Label>
               <Input
                 id="targetQuantity"
                 name="targetQuantity"
@@ -175,7 +195,6 @@ export function ProductSubmissionForm({ contractId, onSuccess }: ProductSubmissi
                 placeholder="e.g., 50000"
                 value={formData.targetQuantity}
                 onChange={handleInputChange}
-                required
               />
               <p className="text-xs text-muted-foreground">Used for label ordering</p>
             </div>
