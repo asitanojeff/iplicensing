@@ -55,13 +55,12 @@ export const assetsRouter = router({
     }),
 
   // Create asset version
-  createVersion: protectedProcedure
+  createAssetVersion: protectedProcedure
     .input(
       z.object({
         assetId: z.number(),
         versionNumber: z.number(),
         storageUrl: z.string(),
-        fileName: z.string(),
         fileSize: z.number(),
         mimeType: z.string(),
       })
@@ -75,11 +74,10 @@ export const assetsRouter = router({
         assetId: input.assetId,
         versionNumber: input.versionNumber,
         storageUrl: input.storageUrl,
-        fileName: input.fileName,
+        storageKey: input.storageUrl.split('/').pop() || 'unknown',
         fileSize: input.fileSize,
         mimeType: input.mimeType,
         uploadedBy: ctx.user.id,
-        uploadedAt: new Date(),
         downloadCount: 0,
       });
     }),

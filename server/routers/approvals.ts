@@ -163,17 +163,15 @@ export const approvalsRouter = router({
       z.object({
         approvalId: z.number(),
         submissionId: z.number(),
-        content: z.string(),
-        commentType: z.enum(["feedback", "revision_request", "approval_note"]),
+        comment: z.string(),
       })
     )
     .mutation(async ({ ctx, input }) => {
       return await approvals.addApprovalComment({
         approvalId: input.approvalId,
         submissionId: input.submissionId,
-        commentType: input.commentType,
-        content: input.content,
-        createdBy: ctx.user.id,
+        comment: input.comment,
+        commentedBy: ctx.user.id,
         createdAt: new Date(),
       });
     }),
@@ -184,7 +182,6 @@ export const approvalsRouter = router({
       z.object({
         submissionId: z.number(),
         stage: z.enum(["concept", "pre_production", "final_product", "market_approval"]),
-        fileName: z.string(),
         storageUrl: z.string(),
         fileSize: z.number(),
         mimeType: z.string(),
@@ -198,7 +195,6 @@ export const approvalsRouter = router({
       return await approvals.uploadSubmissionFile({
         submissionId: input.submissionId,
         stage: input.stage,
-        fileName: input.fileName,
         storageUrl: input.storageUrl,
         storageKey: input.storageUrl.split('/').pop() || 'unknown',
         fileSize: input.fileSize,
