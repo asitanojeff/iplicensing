@@ -20,10 +20,10 @@ export const royaltiesRouter = router({
 
       return await royalties.createRoyaltyReport({
         contractId: input.contractId,
-        licenseeId: ctx.user.id,
+        licenseeId: ctx.user.id.toString(),
         reportPeriod: input.reportPeriod,
-        grossSales: input.grossSales,
-        deductions: input.deductions || 0,
+        grossSales: input.grossSales.toString(),
+        deductions: (input.deductions || 0).toString(),
         status: "draft",
         createdAt: new Date(),
       });

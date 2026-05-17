@@ -94,8 +94,8 @@ export const contractsRouter = router({
 
       return await contractMgmt.createContractTerms({
         contractId: input.contractId,
-        royaltyRate: input.royaltyRate,
-        minimumGuarantee: input.minimumGuarantee,
+        royaltyRate: input.royaltyRate.toString(),
+        minimumGuarantee: input.minimumGuarantee?.toString() || null,
         territories: input.territories,
         categories: input.categories,
         paymentTerms: input.paymentTerms,
