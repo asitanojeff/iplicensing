@@ -1,0 +1,41 @@
+{
+  "build_command": "pnpm run build",
+  "capabilities": [
+    "server",
+    "db",
+    "user"
+  ],
+  "dev_command": "pnpm run dev",
+  "env_vars": {
+    "DATABASE_URL": "mysql://3KVUcvtm8roQLHR.83eed70afb04:ZL6Y22deEfT4Vd3NW9nz@gateway04.us-east-1.prod.aws.tidbcloud.com:4000/jnHdPyPsim2dphjxuKG7tg?ssl={\"rejectUnauthorized\":true}"
+  },
+  "experiments": null,
+  "git_remote": {
+    "repo_url": "s3://vida-prod-gitrepo/webdev-git/310419663029851344/jnHdPyPsim2dphjxuKG7tg",
+    "access_key_id": "ASIAZV3A2ECZNTRXZFK7",
+    "secret_access_key": "QX/3MsI4Y3pT2iS1JY85IMdWvxEgPyngF7nqBwMh",
+    "session_token": "IQoJb3JpZ2luX2VjENb//////////wEaCXVzLWVhc3QtMSJHMEUCIQD+kVp0ZwnEmBYBMP8Wre+NoRdwJMYfw99d3eZa83z0GwIgNs8yXXWGRuLxss+6cxrNK3xuhDCgtYsKdk7tm9+Is5Mq/wMInv//////////ARAEGgw2NjUzODYwOTg4NjYiDBZHzD0Cq1TsaCjFXSrTA/ouY8nNfi/gJhbABbFsYNNlqj2is0xtOlvVqa32XvRWiYLKadWdxmaKd7oDC75gvANJt3h8+yAt5pQJwYR0jhrMqxa8PAFAl7nvGWwpzS866/zIGDOP1TSjCvr7XUdiQKiJqf2yGFqbKwnOQV7lEer3k6vbdptjrftfzj1DQvEcIdzdtGPvSJYb1iMKvSCktRmQongDpqkDCbxg9yKOVvyGds8gtuVBZ2nMdY8nCJ2k+RcOJOzPv2dFb4Kt0SsvIQzO0cYo088SiRTGkIps+aBLZ4OUeOpXWYLEEuCOQM4C8AkZ5RHGL1ZfnW6eq1aIm8g1cxiS1A6Gn0G24MsGVXNzdOHa4sJsb0so+ABB5/bLsljrIUHHn85nLRmZil5b1qd9/gTwsDOWW+xaSBmJVMWggns8YEjI4rLy69ncUS+rkpr/6DsfzCqlIIiIvKfHfoc7Q7aHsyQ08zs05Vsl9IekHPpXgOo15vjaxZ6WCq5TbSQcvFMbTG3JlgGDFV0Feyonj7As/VPzitauNRUT07lPwCn8ZcIv3YYFPd6hSrhQjvoxxVvYZZB3R3NkXCEjOOK1lgV8gJJHLLo5Li3PQaHjHSJyxSqt/XrQJMu27ZQVpHeVMIecpdAGOp0B4OWPPSENmMeJ9tJDnpBXKGcMrMcxfm8O9iOuion5pz9lXRplmjTJqtvzYGylHxZqwVmmEtWZeUEMAUpJ6wYE6icG+i1DT3pFxP7vV7KzFE6P4Ujj5lqzXc/X1u00n1jB/sEu78wYujppPL3R8d3L2Px13uQbT2p/38YCO9K0VWu09M8BXVxctGIoetRnjRWaWV0qOwTDz1b4zLTYOg==",
+    "expiration": "2026-05-17T17:11:35.000Z"
+  },
+  "name": "ip-licensing-system",
+  "path": "/home/ubuntu/ip-licensing-system",
+  "port": 3000,
+  "secrets": {
+    "BUILT_IN_FORGE_API_KEY": "KXjDEjgR5iCxMN4vXhtKBe",
+    "BUILT_IN_FORGE_API_URL": "https://forge.manus.ai",
+    "JWT_SECRET": "UbgS9ucZEnkhmxNv5v6Pwq",
+    "OAUTH_SERVER_URL": "https://api.manus.im",
+    "OWNER_NAME": "Keith Wu",
+    "OWNER_OPEN_ID": "EoXGNAvoXYSNN4ybvk4A9s",
+    "VITE_ANALYTICS_ENDPOINT": "https://manus-analytics.com",
+    "VITE_ANALYTICS_WEBSITE_ID": "747f4c9d-879f-4f1a-a63d-867fb84a2522",
+    "VITE_APP_ID": "jnHdPyPsim2dphjxuKG7tg",
+    "VITE_APP_LOGO": "",
+    "VITE_APP_TITLE": "IP Licensing Management System",
+    "VITE_FRONTEND_FORGE_API_KEY": "YbL3uQKkfNYFT9jUgpvSv9",
+    "VITE_FRONTEND_FORGE_API_URL": "https://forge.manus.ai",
+    "VITE_OAUTH_PORTAL_URL": "https://manus.im"
+  },
+  "template_id": "web-db-user",
+  "test_command": "pnpm test"
+}
