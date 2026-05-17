@@ -200,10 +200,10 @@ export const approvalsRouter = router({
         stage: input.stage,
         fileName: input.fileName,
         storageUrl: input.storageUrl,
+        storageKey: input.storageUrl.split('/').pop() || 'unknown',
         fileSize: input.fileSize,
         mimeType: input.mimeType,
         uploadedBy: ctx.user.id,
-        uploadedAt: new Date(),
       });
     }),
 

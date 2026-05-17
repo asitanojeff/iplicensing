@@ -43,7 +43,7 @@ export const assetsRouter = router({
         description: input.description,
         assetType: input.assetType,
         category: input.category,
-        isActive: true,
+        status: "active",
       });
     }),
 
@@ -102,6 +102,7 @@ export const assetsRouter = router({
       return await assetBank.grantAssetPermission({
         assetId: input.assetId,
         licenseeId: input.licenseeId,
+        grantedBy: ctx.user.id,
         canView: input.canView,
         canDownload: input.canDownload,
         grantedAt: new Date(),
