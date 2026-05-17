@@ -162,3 +162,44 @@
 - [ ] Test with real licensee data
 - [ ] Validate calculations against real contracts
 - [ ] Optimize UI based on actual document structure
+
+
+## Phase 15: Enhanced Royalty Management (Three-Model Calculations)
+- [ ] Update contract terms table to store three royalty rate models
+  - [ ] Retail price royalty rate
+  - [ ] Wholesale price royalty rate
+  - [ ] Manufacturing cost royalty rate (for Gift with Purchase, Purchase with Purchase)
+- [ ] Build royalty report form with three pricing models
+  - [ ] Line item entry with SKU, product name, pricing model selector
+  - [ ] Dynamic unit price and quantity fields based on model
+  - [ ] Auto-calculated gross turnover per line
+  - [ ] Auto-calculated royalty due per line
+  - [ ] Channel totals (retail vs wholesale vs manufacturing)
+- [ ] Implement multi-currency conversion
+  - [ ] Integrate with exchange rate API (Wall Street Journal, Yahoo Finance)
+  - [ ] Use end-of-quarter exchange rates
+  - [ ] Display exchange rate used in report
+  - [ ] Auto-convert total royalty to USD
+- [ ] Implement quarterly reminder system
+  - [ ] Q1 (Jan 1-31 Mar): Deadline Apr 25-30
+  - [ ] Q2 (Apr 1-30 Jun): Deadline Jul 25-30
+  - [ ] Q3 (Jul 1-30 Sep): Deadline Oct 25-30
+  - [ ] Q4 (Oct 1-31 Dec): Deadline Jan 25-30
+  - [ ] Automated reminders on deadline date
+  - [ ] Overdue tracking and escalation
+- [ ] Implement invoice generation
+  - [ ] MG payment invoices
+  - [ ] Excess royalty invoices (after MG recoupment)
+  - [ ] Payment tracking and history
+- [ ] Test with Charmy Chan contract (Chaelect - South Korea)
+- [ ] Test with Monchhichi contracts (when provided)
+
+## Phase 16: Integration with Real Documents & Data (WAITING FOR USER INPUT)
+- [ ] Receive Monchhichi License Agreement
+- [ ] Receive Monchhichi Royalty Report sample
+- [ ] Receive MG Invoice example
+- [ ] Receive Excess Royalty Invoice example
+- [ ] Extract key terms from Monchhichi agreements
+- [ ] Test calculations with Monchhichi data
+- [ ] Validate invoice generation matches real format
+- [ ] Test multi-currency conversion with real exchange rates

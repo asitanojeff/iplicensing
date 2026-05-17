@@ -209,7 +209,7 @@ export type LicenseeAssignment = typeof licenseeAssignments.$inferSelect;
 export type InsertLicenseeAssignment = typeof licenseeAssignments.$inferInsert;
 
 /**
- * Product Submissions table - stores product submission details
+ * Product Submissions table - stores product submission details with pricing and quantities
  */
 export const productSubmissions = mysqlTable(
   "product_submissions",
@@ -217,8 +217,18 @@ export const productSubmissions = mysqlTable(
     id: int("id").autoincrement().primaryKey(),
     licenseeId: int("licensee_id").notNull(),
     contractId: int("contract_id").notNull(),
+    itemNumber: varchar("item_number", { length: 100 }).notNull(), // SKU - must match royalty report
+    licensedProductId: int("licensed_product_id").notNull(), // Reference to licensed product in contract
     productName: varchar("product_name", { length: 255 }).notNull(),
     description: text("description"),
+    suggestedRetailPrice: decimal("suggested_retail_price", { precision: 12, scale: 2 }),
+    suggestedWholesalePrice: decimal("suggested_wholesale_price", { precision: 12, scale: 2 }), // Optional
+    targetLaunchDate: timestamp("target_launch_date"),
+    targetQuantity: int("target_quantity"), // Estimated production qty for label ordering
+    notes: longtext("notes"), // Design description, requests, feedback
+    isPreliminary: boolean("is_preliminary").default(true).notNull(), // Can be updated before market release
+    designImageStorageKey: varchar("design_image_storage_key", { length: 512 }),
+    designImageUrl: varchar("design_image_url", { length: 1024 }),
     currentStage: mysqlEnum("current_stage", [
       "concept",
       "pre_production",
@@ -236,6 +246,7 @@ export const productSubmissions = mysqlTable(
   (table) => ({
     licenseeIdIdx: index("licensee_id_idx").on(table.licenseeId),
     contractIdIdx: index("contract_id_idx").on(table.contractId),
+    itemNumberIdx: index("item_number_idx").on(table.itemNumber),
   })
 );
 
@@ -538,3 +549,122 @@ export const quarterlyReminders = mysqlTable(
 
 export type QuarterlyReminder = typeof quarterlyReminders.$inferSelect;
 export type InsertQuarterlyReminder = typeof quarterlyReminders.$inferInsert;
+
+
+/**
+ * Label Orders table - tracks security label purchase orders
+ */
+export const labelOrders = mysqlTable(
+  "label_orders",
+  {
+    id: int("id").autoincrement().primaryKey(),
+    licenseeId: int("licensee_id").notNull(),
+    contractId: int("contract_id").notNull(),
+    submissionId: int("submission_id").notNull(),
+    quantity: int("quantity").notNull(),
+    unitPrice: decimal("unit_price", { precision: 10, scale: 4 }).notNull(),
+    totalCost: decimal("total_cost", { precision: 15, scale: 2 }).notNull(),
+    courierFee: decimal("courier_fee", { precision: 12, scale: 2 }).default(0),
+    totalAmount: decimal("total_amount", { precision: 15, scale: 2 }).notNull(),
+    requestedArrivalDate: timestamp("requested_arrival_date"),
+    status: mysqlEnum("status", [
+      "pending",
+      "approved",
+      "invoiced",
+      "paid",
+      "manufactured",
+      "shipped",
+      "delivered",
+      "cancelled",
+    ])
+      .default("pending")
+      .notNull(),
+    invoiceNumber: varchar("invoice_number", { length: 100 }),
+    invoiceGeneratedAt: timestamp("invoice_generated_at"),
+    paymentReceivedAt: timestamp("payment_received_at"),
+    shippedAt: timestamp("shipped_at"),
+    deliveredAt: timestamp("delivered_at"),
+    serialNumbersAssigned: boolean("serial_numbers_assigned").default(false).notNull(),
+    notes: longtext("notes"),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+    updatedAt: timestamp("updated_at").defaultNow().onUpdateNow().notNull(),
+  },
+  (table) => ({
+    licenseeIdIdx: index("licensee_id_idx").on(table.licenseeId),
+    contractIdIdx: index("contract_id_idx").on(table.contractId),
+    submissionIdIdx: index("submission_id_idx").on(table.submissionId),
+  })
+);
+
+export type LabelOrder = typeof labelOrders.$inferSelect;
+export type InsertLabelOrder = typeof labelOrders.$inferInsert;
+
+/**
+ * Contract Status History table - tracks contract lifecycle
+ */
+export const contractStatusHistory = mysqlTable(
+  "contract_status_history",
+  {
+    id: int("id").autoincrement().primaryKey(),
+    contractId: int("contract_id").notNull(),
+    status: mysqlEnum("status", [
+      "draft",
+      "signed",
+      "mg_invoiced",
+      "mg_paid",
+      "fully_executed",
+      "active",
+      "expired",
+      "terminated",
+    ]).notNull(),
+    statusChangedAt: timestamp("status_changed_at").defaultNow().notNull(),
+    changedBy: int("changed_by"),
+    notes: longtext("notes"),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+  },
+  (table) => ({
+    contractIdIdx: index("contract_id_idx").on(table.contractId),
+    statusIdx: index("status_idx").on(table.status),
+  })
+);
+
+export type ContractStatusHistory = typeof contractStatusHistory.$inferSelect;
+export type InsertContractStatusHistory = typeof contractStatusHistory.$inferInsert;
+
+/**
+ * Invoices table - tracks all invoices (MG, Label Orders, Excess Royalties)
+ */
+export const invoices = mysqlTable(
+  "invoices",
+  {
+    id: int("id").autoincrement().primaryKey(),
+    invoiceNumber: varchar("invoice_number", { length: 100 }).unique().notNull(),
+    invoiceType: mysqlEnum("invoice_type", ["mg", "label_order", "excess_royalty"]).notNull(),
+    licenseeId: int("licensee_id").notNull(),
+    contractId: int("contract_id").notNull(),
+    relatedEntityId: int("related_entity_id"),
+    amount: decimal("amount", { precision: 15, scale: 2 }).notNull(),
+    currency: varchar("currency", { length: 3 }).default("USD").notNull(),
+    invoiceDate: timestamp("invoice_date").notNull(),
+    dueDate: timestamp("due_date").notNull(),
+    status: mysqlEnum("status", ["issued", "paid", "overdue", "cancelled"])
+      .default("issued")
+      .notNull(),
+    paidAt: timestamp("paid_at"),
+    paymentMethod: varchar("payment_method", { length: 100 }),
+    storageKey: varchar("storage_key", { length: 512 }),
+    storageUrl: varchar("storage_url", { length: 1024 }),
+    notes: longtext("notes"),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+    updatedAt: timestamp("updated_at").defaultNow().onUpdateNow().notNull(),
+  },
+  (table) => ({
+    licenseeIdIdx: index("licensee_id_idx").on(table.licenseeId),
+    contractIdIdx: index("contract_id_idx").on(table.contractId),
+    invoiceNumberIdx: index("invoice_number_idx").on(table.invoiceNumber),
+    invoiceTypeIdx: index("invoice_type_idx").on(table.invoiceType),
+  })
+);
+
+export type Invoice = typeof invoices.$inferSelect;
+export type InsertInvoice = typeof invoices.$inferInsert;
