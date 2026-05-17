@@ -207,7 +207,7 @@ export const approvalsRouter = router({
         throw new Error("Unauthorized");
       }
 
-      return await approvals.requestSubmissionRevision(input.submissionId, input.stage, input.comment, ctx.user.id);
+      return await approvals.requestRevision(input.submissionId, input.stage, input.comment, ctx.user.id);
     }),
 
   // Reject submission
@@ -224,7 +224,7 @@ export const approvalsRouter = router({
         throw new Error("Unauthorized");
       }
 
-      return await approvals.rejectSubmissionStage(input.submissionId, input.stage, input.reason, ctx.user.id);
+      return await approvals.rejectSubmission(input.submissionId, input.stage, input.reason, ctx.user.id);
     }),
 
   // Resubmit after revision
