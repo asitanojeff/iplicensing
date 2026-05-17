@@ -112,10 +112,10 @@
 - [ ] Create search and filter functionality
 
 ## Phase 12: Integration & Testing
-- [ ] Write comprehensive vitest tests for all procedures
-- [ ] Test role-based access control enforcement
-- [ ] Test royalty calculation accuracy
-- [ ] Test approval workflow state transitions
+- [x] Write comprehensive vitest tests for all procedures
+- [x] Test role-based access control enforcement
+- [x] Test royalty calculation accuracy (via calculateRoyalties procedure)
+- [x] Test approval workflow state transitions (via approvals router)
 - [ ] Test file upload and storage integration
 - [ ] Test notification delivery
 - [ ] Conduct end-to-end testing of all workflows

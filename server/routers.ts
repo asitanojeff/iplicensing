@@ -5,6 +5,10 @@ import { publicProcedure, router, protectedProcedure } from "./_core/trpc";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 import { getUserById, updateUserRole, getUsersByRole } from "./db";
+import { assetsRouter } from "./routers/assets";
+import { contractsRouter } from "./routers/contracts";
+import { approvalsRouter } from "./routers/approvals";
+import { royaltiesRouter } from "./routers/royalties";
 
 /**
  * Admin-only procedure - ensures user has admin role
@@ -194,6 +198,14 @@ export const appRouter = router({
         return userPermissions.includes(input.action);
       }),
   }),
+
+  /**
+   * Feature routers
+   */
+  assets: assetsRouter,
+  contracts: contractsRouter,
+  approvals: approvalsRouter,
+  royalties: royaltiesRouter,
 });
 
 export type AppRouter = typeof appRouter;
