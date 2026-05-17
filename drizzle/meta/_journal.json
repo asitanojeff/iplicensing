@@ -1,5 +1,27 @@
 {
   "version": "7",
   "dialect": "mysql",
-  "entries": []
+  "entries": [
+    {
+      "idx": 0,
+      "version": "5",
+      "when": 1778994711876,
+      "tag": "0000_closed_enchantress",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "5",
+      "when": 1778994865114,
+      "tag": "0001_complex_pete_wisdom",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "5",
+      "when": 1778994929288,
+      "tag": "0002_sour_dreaming_celestial",
+      "breakpoints": true
+    }
+  ]
 }
