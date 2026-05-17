@@ -127,3 +127,38 @@
 - [ ] Create user documentation
 - [ ] Set up monitoring and error tracking
 - [ ] Create checkpoint and prepare for deployment
+
+
+## Phase 14: Multi-Currency Support (NEW)
+- [ ] Add currency field to royalty reports table
+- [ ] Integrate with exchange rate API (get last day of quarter rates)
+- [ ] Auto-convert local currency to USD
+- [ ] Store historical exchange rates for audit trail
+- [ ] Display converted amounts in reports
+- [ ] Create currency conversion UI in report submission form
+- [ ] Test with multiple currencies (EUR, GBP, JPY, etc.)
+
+## Phase 15: Quarterly Reporting Schedule & Automated Reminders (NEW)
+- [ ] Define quarterly periods (Q1: Jan-Mar, Q2: Apr-Jun, Q3: Jul-Sep, Q4: Oct-Dec)
+- [ ] Calculate submission deadlines (30 days after quarter end)
+- [ ] Create scheduled task for reminder notifications
+- [ ] Send reminder email on submission deadline date
+- [ ] Track which licensees have submitted for each quarter
+- [ ] Send follow-up reminders for overdue reports (weekly)
+- [ ] Create overdue report dashboard for licensors
+- [ ] Implement cron job for automated reminder scheduling
+
+
+## Phase 16: Integration with Real Documents & Data (WAITING FOR USER INPUT)
+- [ ] Receive and review style guide/brand guidelines
+- [ ] Receive and review standard license agreement template
+- [ ] Receive and review royalty report template
+- [ ] Receive 1-2 sample licensee contracts with real terms
+- [ ] Receive sample royalty reports (if available)
+- [ ] Extract key terms from real license agreements
+- [ ] Design royalty report form based on actual template
+- [ ] Configure quarterly reminder schedule for actual deadlines
+- [ ] Set up multi-currency conversion with real exchange rates
+- [ ] Test with real licensee data
+- [ ] Validate calculations against real contracts
+- [ ] Optimize UI based on actual document structure

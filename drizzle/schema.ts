@@ -51,23 +51,19 @@ export const ipAssets = mysqlTable(
     name: varchar("name", { length: 255 }).notNull(),
     description: text("description"),
     assetType: mysqlEnum("asset_type", [
-      "style_guide",
       "logo",
       "artwork",
-      "psd_file",
-      "ai_file",
-      "packaging_template",
-      "marketing_material",
-      "reference",
+      "template",
+      "style_guide",
+      "packaging",
+      "other",
     ]).notNull(),
+    category: varchar("category", { length: 100 }).notNull(),
     folderPath: varchar("folder_path", { length: 512 }),
-    storageKey: varchar("storage_key", { length: 512 }).notNull(),
-    storageUrl: varchar("storage_url", { length: 1024 }).notNull(),
-    mimeType: varchar("mime_type", { length: 100 }),
-    fileSize: int("file_size"),
-    version: int("version").default(1).notNull(),
-    isActive: boolean("is_active").default(true).notNull(),
     expiryDate: timestamp("expiry_date"),
+    status: mysqlEnum("status", ["active", "archived", "expired"])
+      .default("active")
+      .notNull(),
     createdAt: timestamp("created_at").defaultNow().notNull(),
     updatedAt: timestamp("updated_at").defaultNow().onUpdateNow().notNull(),
   },
@@ -80,7 +76,7 @@ export type IpAsset = typeof ipAssets.$inferSelect;
 export type InsertIpAsset = typeof ipAssets.$inferInsert;
 
 /**
- * Asset Versions table - tracks version history and download counts
+ * Asset Versions table - tracks version history and downloads
  */
 export const assetVersions = mysqlTable(
   "asset_versions",
@@ -90,8 +86,11 @@ export const assetVersions = mysqlTable(
     versionNumber: int("version_number").notNull(),
     storageKey: varchar("storage_key", { length: 512 }).notNull(),
     storageUrl: varchar("storage_url", { length: 1024 }).notNull(),
-    downloadCount: int("download_count").default(0).notNull(),
+    fileSize: int("file_size"),
+    mimeType: varchar("mime_type", { length: 100 }),
     uploadedBy: int("uploaded_by").notNull(),
+    downloadCount: int("download_count").default(0).notNull(),
+    lastDownloadedAt: timestamp("last_downloaded_at"),
     createdAt: timestamp("created_at").defaultNow().notNull(),
   },
   (table) => ({
@@ -103,7 +102,7 @@ export type AssetVersion = typeof assetVersions.$inferSelect;
 export type InsertAssetVersion = typeof assetVersions.$inferInsert;
 
 /**
- * Asset Permissions table - controls which licensees can access which assets
+ * Asset Permissions table - controls licensee access to assets
  */
 export const assetPermissions = mysqlTable(
   "asset_permissions",
@@ -111,10 +110,12 @@ export const assetPermissions = mysqlTable(
     id: int("id").autoincrement().primaryKey(),
     assetId: int("asset_id").notNull(),
     licenseeId: int("licensee_id").notNull(),
-    canDownload: boolean("can_download").default(true).notNull(),
     canView: boolean("can_view").default(true).notNull(),
-    grantedAt: timestamp("granted_at").defaultNow().notNull(),
+    canDownload: boolean("can_download").default(false).notNull(),
     grantedBy: int("granted_by").notNull(),
+    grantedAt: timestamp("granted_at").defaultNow().notNull(),
+    revokedAt: timestamp("revoked_at"),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
   },
   (table) => ({
     assetIdIdx: index("asset_id_idx").on(table.assetId),
@@ -132,16 +133,13 @@ export const contracts = mysqlTable(
   "contracts",
   {
     id: int("id").autoincrement().primaryKey(),
-    licensorId: int("licensor_id").notNull(),
-    licenseeId: int("licensee_id"),
-    contractNumber: varchar("contract_number", { length: 100 }).unique(),
+    contractNumber: varchar("contract_number", { length: 100 }).unique().notNull(),
     title: varchar("title", { length: 255 }).notNull(),
-    dealMemoStorageKey: varchar("deal_memo_storage_key", { length: 512 }),
-    dealMemoUrl: varchar("deal_memo_url", { length: 1024 }),
+    licensorId: int("licensor_id").notNull(),
+    description: text("description"),
     status: mysqlEnum("status", [
       "draft",
       "pending_signature",
-      "signed",
       "active",
       "expired",
       "terminated",
@@ -150,16 +148,14 @@ export const contracts = mysqlTable(
       .notNull(),
     startDate: timestamp("start_date"),
     endDate: timestamp("end_date"),
-    signedDate: timestamp("signed_date"),
-    territory: varchar("territory", { length: 255 }),
-    category: varchar("category", { length: 255 }),
-    notes: longtext("notes"),
+    storageKey: varchar("storage_key", { length: 512 }),
+    storageUrl: varchar("storage_url", { length: 1024 }),
     createdAt: timestamp("created_at").defaultNow().notNull(),
     updatedAt: timestamp("updated_at").defaultNow().onUpdateNow().notNull(),
   },
   (table) => ({
     licensorIdIdx: index("licensor_id_idx").on(table.licensorId),
-    licenseeIdIdx: index("licensee_id_idx").on(table.licenseeId),
+    contractNumberIdx: index("contract_number_idx").on(table.contractNumber),
   })
 );
 
@@ -167,27 +163,20 @@ export type Contract = typeof contracts.$inferSelect;
 export type InsertContract = typeof contracts.$inferInsert;
 
 /**
- * Contract Terms table - stores extracted key terms from contracts
+ * Contract Terms table - stores royalty rates, MG, territories, categories
  */
 export const contractTerms = mysqlTable(
   "contract_terms",
   {
     id: int("id").autoincrement().primaryKey(),
     contractId: int("contract_id").notNull(),
-    royaltyRate: decimal("royalty_rate", { precision: 5, scale: 2 }),
+    royaltyRate: decimal("royalty_rate", { precision: 5, scale: 2 }).notNull(),
     minimumGuarantee: decimal("minimum_guarantee", { precision: 15, scale: 2 }),
-    paymentFrequency: mysqlEnum("payment_frequency", [
-      "quarterly",
-      "semi_annual",
-      "annual",
-    ])
-      .default("quarterly")
-      .notNull(),
-    currency: varchar("currency", { length: 10 }).default("USD").notNull(),
-    territories: json("territories"),
-    categories: json("categories"),
-    approvalRequired: boolean("approval_required").default(true).notNull(),
-    extractedAt: timestamp("extracted_at").defaultNow().notNull(),
+    territories: varchar("territories", { length: 512 }),
+    categories: varchar("categories", { length: 512 }),
+    paymentTerms: varchar("payment_terms", { length: 255 }),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+    updatedAt: timestamp("updated_at").defaultNow().onUpdateNow().notNull(),
   },
   (table) => ({
     contractIdIdx: index("contract_id_idx").on(table.contractId),
@@ -198,7 +187,29 @@ export type ContractTerms = typeof contractTerms.$inferSelect;
 export type InsertContractTerms = typeof contractTerms.$inferInsert;
 
 /**
- * Product Submissions table - tracks licensee product submissions through approval pipeline
+ * Licensee Assignments table - links contracts to licensees
+ */
+export const licenseeAssignments = mysqlTable(
+  "licensee_assignments",
+  {
+    id: int("id").autoincrement().primaryKey(),
+    contractId: int("contract_id").notNull(),
+    licenseeId: int("licensee_id").notNull(),
+    assignedBy: int("assigned_by").notNull(),
+    assignedAt: timestamp("assigned_at").defaultNow().notNull(),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+  },
+  (table) => ({
+    contractIdIdx: index("contract_id_idx").on(table.contractId),
+    licenseeIdIdx: index("licensee_id_idx").on(table.licenseeId),
+  })
+);
+
+export type LicenseeAssignment = typeof licenseeAssignments.$inferSelect;
+export type InsertLicenseeAssignment = typeof licenseeAssignments.$inferInsert;
+
+/**
+ * Product Submissions table - stores product submission details
  */
 export const productSubmissions = mysqlTable(
   "product_submissions",
@@ -207,18 +218,20 @@ export const productSubmissions = mysqlTable(
     licenseeId: int("licensee_id").notNull(),
     contractId: int("contract_id").notNull(),
     productName: varchar("product_name", { length: 255 }).notNull(),
+    description: text("description"),
     currentStage: mysqlEnum("current_stage", [
       "concept",
       "pre_production",
       "final_product",
       "market_approval",
-      "approved",
-      "rejected",
     ])
       .default("concept")
       .notNull(),
-    submissionDate: timestamp("submission_date").defaultNow().notNull(),
-    lastUpdated: timestamp("last_updated").defaultNow().onUpdateNow().notNull(),
+    status: mysqlEnum("status", ["in_progress", "approved", "rejected", "revision_requested"])
+      .default("in_progress")
+      .notNull(),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+    updatedAt: timestamp("updated_at").defaultNow().onUpdateNow().notNull(),
   },
   (table) => ({
     licenseeIdIdx: index("licensee_id_idx").on(table.licenseeId),
@@ -230,7 +243,7 @@ export type ProductSubmission = typeof productSubmissions.$inferSelect;
 export type InsertProductSubmission = typeof productSubmissions.$inferInsert;
 
 /**
- * Submission Approvals table - tracks each stage of the approval pipeline
+ * Submission Approvals table - tracks 4-stage approval pipeline
  */
 export const submissionApprovals = mysqlTable(
   "submission_approvals",
@@ -245,17 +258,15 @@ export const submissionApprovals = mysqlTable(
     ]).notNull(),
     status: mysqlEnum("status", [
       "pending",
-      "in_review",
       "approved",
-      "revision_requested",
       "rejected",
+      "revision_requested",
+      "resubmitted",
     ])
       .default("pending")
       .notNull(),
-    assignedTo: int("assigned_to"),
-    submittedAt: timestamp("submitted_at"),
-    reviewedAt: timestamp("reviewed_at"),
     reviewedBy: int("reviewed_by"),
+    reviewedAt: timestamp("reviewed_at"),
     createdAt: timestamp("created_at").defaultNow().notNull(),
     updatedAt: timestamp("updated_at").defaultNow().onUpdateNow().notNull(),
   },
@@ -276,13 +287,9 @@ export const approvalComments = mysqlTable(
     id: int("id").autoincrement().primaryKey(),
     approvalId: int("approval_id").notNull(),
     submissionId: int("submission_id").notNull(),
-    commentType: mysqlEnum("comment_type", [
-      "feedback",
-      "revision_request",
-      "approval_note",
-    ]).notNull(),
-    content: longtext("content").notNull(),
-    createdBy: int("created_by").notNull(),
+    commentedBy: int("commented_by").notNull(),
+    comment: longtext("comment").notNull(),
+    isRevisionRequest: boolean("is_revision_request").default(false).notNull(),
     createdAt: timestamp("created_at").defaultNow().notNull(),
   },
   (table) => ({
@@ -295,7 +302,7 @@ export type ApprovalComment = typeof approvalComments.$inferSelect;
 export type InsertApprovalComment = typeof approvalComments.$inferInsert;
 
 /**
- * Submission Files table - stores uploaded files for each submission
+ * Submission Files table - stores uploaded files for each submission stage
  */
 export const submissionFiles = mysqlTable(
   "submission_files",
@@ -308,18 +315,13 @@ export const submissionFiles = mysqlTable(
       "final_product",
       "market_approval",
     ]).notNull(),
-    fileType: mysqlEnum("file_type", [
-      "design",
-      "packaging",
-      "marketing_material",
-      "product_sample",
-    ]).notNull(),
     fileName: varchar("file_name", { length: 255 }).notNull(),
     storageKey: varchar("storage_key", { length: 512 }).notNull(),
     storageUrl: varchar("storage_url", { length: 1024 }).notNull(),
-    mimeType: varchar("mime_type", { length: 100 }),
     fileSize: int("file_size"),
-    uploadedAt: timestamp("uploaded_at").defaultNow().notNull(),
+    mimeType: varchar("mime_type", { length: 100 }),
+    uploadedBy: int("uploaded_by").notNull(),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
   },
   (table) => ({
     submissionIdIdx: index("submission_id_idx").on(table.submissionId),
@@ -330,7 +332,30 @@ export type SubmissionFile = typeof submissionFiles.$inferSelect;
 export type InsertSubmissionFile = typeof submissionFiles.$inferInsert;
 
 /**
- * Royalty Reports table - stores quarterly royalty submissions
+ * Exchange Rates table - stores historical exchange rates for currency conversion
+ */
+export const exchangeRates = mysqlTable(
+  "exchange_rates",
+  {
+    id: int("id").autoincrement().primaryKey(),
+    fromCurrency: varchar("from_currency", { length: 3 }).notNull(),
+    toCurrency: varchar("to_currency", { length: 3 }).notNull(),
+    rate: decimal("rate", { precision: 10, scale: 6 }).notNull(),
+    rateDate: timestamp("rate_date").notNull(),
+    source: varchar("source", { length: 100 }),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+  },
+  (table) => ({
+    currencyPairIdx: index("currency_pair_idx").on(table.fromCurrency, table.toCurrency),
+    rateDateIdx: index("rate_date_idx").on(table.rateDate),
+  })
+);
+
+export type ExchangeRate = typeof exchangeRates.$inferSelect;
+export type InsertExchangeRate = typeof exchangeRates.$inferInsert;
+
+/**
+ * Royalty Reports table - stores quarterly royalty submissions with multi-currency support
  */
 export const royaltyReports = mysqlTable(
   "royalty_reports",
@@ -339,11 +364,17 @@ export const royaltyReports = mysqlTable(
     licenseeId: int("licensee_id").notNull(),
     contractId: int("contract_id").notNull(),
     reportingPeriod: varchar("reporting_period", { length: 20 }).notNull(),
+    currency: varchar("currency", { length: 3 }).default("USD").notNull(),
     grossSales: decimal("gross_sales", { precision: 15, scale: 2 }).notNull(),
     deductions: decimal("deductions", { precision: 15, scale: 2 }).default(0),
     netSales: decimal("net_sales", { precision: 15, scale: 2 }).notNull(),
+    exchangeRate: decimal("exchange_rate", { precision: 10, scale: 6 }).default(1),
+    exchangeRateDate: timestamp("exchange_rate_date"),
+    grossSalesUSD: decimal("gross_sales_usd", { precision: 15, scale: 2 }),
+    netSalesUSD: decimal("net_sales_usd", { precision: 15, scale: 2 }),
     royaltyRate: decimal("royalty_rate", { precision: 5, scale: 2 }).notNull(),
     royaltyDue: decimal("royalty_due", { precision: 15, scale: 2 }).notNull(),
+    royaltyDueUSD: decimal("royalty_due_usd", { precision: 15, scale: 2 }),
     minimumGuarantee: decimal("minimum_guarantee", { precision: 15, scale: 2 }),
     mgRecoupment: decimal("mg_recoupment", { precision: 15, scale: 2 }).default(0),
     excessRoyalty: decimal("excess_royalty", { precision: 15, scale: 2 }).default(0),
@@ -371,11 +402,40 @@ export const royaltyReports = mysqlTable(
   (table) => ({
     licenseeIdIdx: index("licensee_id_idx").on(table.licenseeId),
     contractIdIdx: index("contract_id_idx").on(table.contractId),
+    reportingPeriodIdx: index("reporting_period_idx").on(table.reportingPeriod),
   })
 );
 
 export type RoyaltyReport = typeof royaltyReports.$inferSelect;
 export type InsertRoyaltyReport = typeof royaltyReports.$inferInsert;
+
+/**
+ * Royalty Calculations table - stores detailed calculation breakdown
+ */
+export const royaltyCalculations = mysqlTable(
+  "royalty_calculations",
+  {
+    id: int("id").autoincrement().primaryKey(),
+    reportId: int("report_id").notNull(),
+    contractTermsId: int("contract_terms_id").notNull(),
+    grossSales: decimal("gross_sales", { precision: 15, scale: 2 }).notNull(),
+    deductionsApplied: decimal("deductions_applied", { precision: 15, scale: 2 }).default(0),
+    netSales: decimal("net_sales", { precision: 15, scale: 2 }).notNull(),
+    royaltyRate: decimal("royalty_rate", { precision: 5, scale: 2 }).notNull(),
+    royaltyDue: decimal("royalty_due", { precision: 15, scale: 2 }).notNull(),
+    minimumGuarantee: decimal("minimum_guarantee", { precision: 15, scale: 2 }),
+    mgRecoupment: decimal("mg_recoupment", { precision: 15, scale: 2 }).default(0),
+    excessRoyalty: decimal("excess_royalty", { precision: 15, scale: 2 }).default(0),
+    notes: longtext("notes"),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+  },
+  (table) => ({
+    reportIdIdx: index("report_id_idx").on(table.reportId),
+  })
+);
+
+export type RoyaltyCalculation = typeof royaltyCalculations.$inferSelect;
+export type InsertRoyaltyCalculation = typeof royaltyCalculations.$inferInsert;
 
 /**
  * Security Labels table - tracks security labels for anti-counterfeit verification
@@ -428,20 +488,20 @@ export const notifications = mysqlTable(
       "royalty_due",
       "contract_expiry",
       "revision_requested",
-      "submission_approved",
-      "submission_rejected",
-      "label_alert",
-      "system_alert",
+      "royalty_overdue",
+      "submission_reminder",
     ]).notNull(),
     title: varchar("title", { length: 255 }).notNull(),
     message: longtext("message").notNull(),
-    relatedEntityType: varchar("related_entity_type", { length: 50 }),
     relatedEntityId: int("related_entity_id"),
+    relatedEntityType: varchar("related_entity_type", { length: 100 }),
     isRead: boolean("is_read").default(false).notNull(),
+    sentAt: timestamp("sent_at").defaultNow().notNull(),
     createdAt: timestamp("created_at").defaultNow().notNull(),
   },
   (table) => ({
     userIdIdx: index("user_id_idx").on(table.userId),
+    typeIdx: index("type_idx").on(table.type),
   })
 );
 
@@ -449,52 +509,32 @@ export type Notification = typeof notifications.$inferSelect;
 export type InsertNotification = typeof notifications.$inferInsert;
 
 /**
- * Licensee Assignments table - links licensees to contracts and assets
+ * Quarterly Reminders table - tracks royalty submission reminders
  */
-export const licenseeAssignments = mysqlTable(
-  "licensee_assignments",
+export const quarterlyReminders = mysqlTable(
+  "quarterly_reminders",
   {
     id: int("id").autoincrement().primaryKey(),
     licenseeId: int("licensee_id").notNull(),
     contractId: int("contract_id").notNull(),
-    assignedAt: timestamp("assigned_at").defaultNow().notNull(),
-    assignedBy: int("assigned_by").notNull(),
+    quarter: varchar("quarter", { length: 10 }).notNull(),
+    year: int("year").notNull(),
+    reportingPeriod: varchar("reporting_period", { length: 20 }).notNull(),
+    submissionDeadline: timestamp("submission_deadline").notNull(),
+    reminderSentAt: timestamp("reminder_sent_at"),
+    reportSubmitted: boolean("report_submitted").default(false).notNull(),
+    submittedAt: timestamp("submitted_at"),
+    followUpReminders: int("follow_up_reminders").default(0).notNull(),
+    lastFollowUpAt: timestamp("last_follow_up_at"),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+    updatedAt: timestamp("updated_at").defaultNow().onUpdateNow().notNull(),
   },
   (table) => ({
     licenseeIdIdx: index("licensee_id_idx").on(table.licenseeId),
     contractIdIdx: index("contract_id_idx").on(table.contractId),
+    quarterYearIdx: index("quarter_year_idx").on(table.quarter, table.year),
   })
 );
 
-export type LicenseeAssignment = typeof licenseeAssignments.$inferSelect;
-export type InsertLicenseeAssignment = typeof licenseeAssignments.$inferInsert;
-
-/**
- * Royalty Calculations table - stores detailed calculation history for audit and analysis
- */
-export const royaltyCalculations = mysqlTable(
-  "royalty_calculations",
-  {
-    id: int("id").autoincrement().primaryKey(),
-    royaltyReportId: int("royalty_report_id").notNull(),
-    contractTermsId: int("contract_terms_id").notNull(),
-    grossSales: decimal("gross_sales", { precision: 15, scale: 2 }).notNull(),
-    deductions: decimal("deductions", { precision: 15, scale: 2 }).default(0),
-    netSales: decimal("net_sales", { precision: 15, scale: 2 }).notNull(),
-    royaltyRate: decimal("royalty_rate", { precision: 5, scale: 2 }).notNull(),
-    royaltyDue: decimal("royalty_due", { precision: 15, scale: 2 }).notNull(),
-    minimumGuarantee: decimal("minimum_guarantee", { precision: 15, scale: 2 }),
-    previousMgRecoupment: decimal("previous_mg_recoupment", { precision: 15, scale: 2 }).default(0),
-    currentMgRecoupment: decimal("current_mg_recoupment", { precision: 15, scale: 2 }).default(0),
-    excessRoyalty: decimal("excess_royalty", { precision: 15, scale: 2 }).default(0),
-    calculatedAt: timestamp("calculated_at").defaultNow().notNull(),
-    calculatedBy: int("calculated_by").notNull(),
-  },
-  (table) => ({
-    royaltyReportIdIdx: index("royalty_report_id_idx").on(table.royaltyReportId),
-    contractTermsIdIdx: index("contract_terms_id_idx").on(table.contractTermsId),
-  })
-);
-
-export type RoyaltyCalculation = typeof royaltyCalculations.$inferSelect;
-export type InsertRoyaltyCalculation = typeof royaltyCalculations.$inferInsert;
+export type QuarterlyReminder = typeof quarterlyReminders.$inferSelect;
+export type InsertQuarterlyReminder = typeof quarterlyReminders.$inferInsert;
