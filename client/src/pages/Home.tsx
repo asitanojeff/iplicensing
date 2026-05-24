@@ -1,11 +1,12 @@
 import { useAuth } from "@/_core/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { getLoginUrl } from "@/const";
 import { ArrowRight, Lock, BarChart3, FileCheck, Zap, Globe, ShieldCheck, Sparkles } from "lucide-react";
+import { useLocation } from "wouter";
 
 export default function Home() {
-  const { isAuthenticated, logout, user } = useAuth();
+  const { isAuthenticated, user } = useAuth();
+  const [, setLocation] = useLocation();
 
   const scrollToFeatures = () => {
     document.getElementById("platform-features")?.scrollIntoView({ behavior: "smooth" });
@@ -22,7 +23,7 @@ export default function Home() {
             ? "/review-dashboard"
             : "/dashboard";
 
-    window.location.href = dashboardUrl;
+    setLocation(dashboardUrl);
     return null;
   }
 
@@ -37,9 +38,9 @@ export default function Home() {
             </div>
             <span className="font-semibold text-lg">IP Licensing</span>
           </div>
-          <a href={getLoginUrl()} className="text-sm font-medium hover:text-accent transition-colors">
+          <button onClick={() => setLocation("/sign-in")} className="text-sm font-medium hover:text-accent transition-colors">
             Sign In
-          </a>
+          </button>
         </div>
       </nav>
 
@@ -56,7 +57,7 @@ export default function Home() {
             <Button
               size="lg"
               className="h-12 px-8 text-base font-semibold"
-              onClick={() => (window.location.href = getLoginUrl())}
+              onClick={() => setLocation("/onboarding")}
             >
               Get Started
               <ArrowRight className="ml-2 w-5 h-5" />
@@ -253,7 +254,7 @@ export default function Home() {
             size="lg"
             variant="secondary"
             className="h-12 px-8 text-base font-semibold"
-            onClick={() => (window.location.href = getLoginUrl())}
+            onClick={() => setLocation("/onboarding")}
           >
             Get Started Now
             <ArrowRight className="ml-2 w-5 h-5" />
