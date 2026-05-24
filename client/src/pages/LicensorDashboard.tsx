@@ -9,7 +9,7 @@ export default function LicensorDashboard() {
       <div className="space-y-8">
         {/* Header */}
         <div>
-          <h1 className="text-3xl font-bold mb-2">Licensor Dashboard</h1>
+          <h1 className="text-3xl font-bold mb-2">Licensor Dashboard (Demo Mode)</h1>
           <p className="text-muted-foreground">
             Manage your IP assets, contracts, and royalty performance
           </p>
@@ -63,17 +63,17 @@ export default function LicensorDashboard() {
           <Card className="p-6">
             <h3 className="text-lg font-semibold mb-4">Quick Actions</h3>
             <div className="space-y-3">
-              <Button variant="outline" className="w-full justify-start">
-                Upload New Asset
+              <Button variant="outline" className="w-full justify-start" onClick={() => (window.location.href = "/assets")}>
+                Go to Assets
               </Button>
-              <Button variant="outline" className="w-full justify-start">
-                Create Contract
+              <Button variant="outline" className="w-full justify-start" onClick={() => (window.location.href = "/contracts")}>
+                Go to Contracts
               </Button>
-              <Button variant="outline" className="w-full justify-start">
-                Review Submissions
+              <Button variant="outline" className="w-full justify-start" onClick={() => (window.location.href = "/approvals")}>
+                Go to Approvals
               </Button>
-              <Button variant="outline" className="w-full justify-start">
-                View Analytics
+              <Button variant="outline" className="w-full justify-start" onClick={() => (window.location.href = "/royalties")}>
+                Go to Royalties
               </Button>
             </div>
           </Card>
