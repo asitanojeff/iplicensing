@@ -2,10 +2,14 @@ import { useAuth } from "@/_core/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { getLoginUrl } from "@/const";
-import { ArrowRight, Lock, BarChart3, FileCheck, Zap } from "lucide-react";
+import { ArrowRight, Lock, BarChart3, FileCheck, Zap, Globe, ShieldCheck, Sparkles } from "lucide-react";
 
 export default function Home() {
   const { isAuthenticated, logout, user } = useAuth();
+
+  const scrollToFeatures = () => {
+    document.getElementById("platform-features")?.scrollIntoView({ behavior: "smooth" });
+  };
 
   if (isAuthenticated) {
     // Redirect to appropriate dashboard based on role
@@ -57,15 +61,30 @@ export default function Home() {
               Get Started
               <ArrowRight className="ml-2 w-5 h-5" />
             </Button>
-            <Button size="lg" variant="outline" className="h-12 px-8 text-base font-semibold">
+            <Button size="lg" variant="outline" className="h-12 px-8 text-base font-semibold" onClick={scrollToFeatures}>
               Learn More
             </Button>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 max-w-3xl mx-auto text-left">
+            <Card className="p-4">
+              <div className="flex items-center gap-2 mb-2 font-semibold"><Globe className="w-4 h-4 text-blue-500" /> Multi-territory ready</div>
+              <p className="text-sm text-muted-foreground">Track royalties, approvals, and compliance by market with clean audit trails.</p>
+            </Card>
+            <Card className="p-4">
+              <div className="flex items-center gap-2 mb-2 font-semibold"><ShieldCheck className="w-4 h-4 text-emerald-500" /> Enterprise-grade controls</div>
+              <p className="text-sm text-muted-foreground">Role-based access, secure assets, and reviewer workflows built for real licensing teams.</p>
+            </Card>
+            <Card className="p-4">
+              <div className="flex items-center gap-2 mb-2 font-semibold"><Sparkles className="w-4 h-4 text-amber-500" /> Fast onboarding</div>
+              <p className="text-sm text-muted-foreground">Launch a working licensing workspace in minutes and scale as operations grow.</p>
+            </Card>
           </div>
         </div>
       </section>
 
       {/* Features Grid */}
-      <section className="py-20 px-4 sm:px-6 lg:px-8 bg-white/50 dark:bg-slate-800/20">
+      <section id="platform-features" className="py-20 px-4 sm:px-6 lg:px-8 bg-white/50 dark:bg-slate-800/20">
         <div className="max-w-6xl mx-auto">
           <h2 className="text-3xl md:text-4xl font-bold text-center mb-16">
             Comprehensive Platform Features
