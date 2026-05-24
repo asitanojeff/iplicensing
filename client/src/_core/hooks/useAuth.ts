@@ -1,38 +1,80 @@
-import { getLoginUrl } from "@/const";
-import { trpc } from "@/lib/trpc";
-import { useCallback, useMemo } from "react";
+import { useCallback, useMemo, useState } from "react";
+
+const DEMO_SESSION_KEY = "demo-user-session";
+
+type DemoUser = {
+  id: string;
+  name: string;
+  email: string;
+  role: "licensor";
+};
+
+const DEFAULT_DEMO_USER: DemoUser = {
+  id: "demo-user",
+  name: "Demo User",
+  email: "demo@iplicensing.local",
+  role: "licensor",
+};
+
+function readDemoSession(): DemoUser | null {
+  if (typeof window === "undefined") {
+    return null;
+  }
+
+  const raw = window.localStorage.getItem(DEMO_SESSION_KEY);
+  if (!raw) {
+    return null;
+  }
+
+  try {
+    return JSON.parse(raw) as DemoUser;
+  } catch {
+    return null;
+  }
+}
+
+function writeDemoSession(user: DemoUser) {
+  if (typeof window !== "undefined") {
+    window.localStorage.setItem(DEMO_SESSION_KEY, JSON.stringify(user));
+  }
+}
+
+function clearDemoSession() {
+  if (typeof window !== "undefined") {
+    window.localStorage.removeItem(DEMO_SESSION_KEY);
+  }
+}
 
 export function useAuth() {
-  const meQuery = trpc.auth.me.useQuery(undefined, {
-    retry: false,
-    staleTime: 60_000,
-  });
+  const [user, setUser] = useState<DemoUser | null>(() => readDemoSession());
 
-  const logoutMutation = trpc.auth.logout.useMutation({
-    onSuccess: async () => {
-      await meQuery.refetch();
-      if (typeof window !== "undefined") {
-        window.location.href = "/";
-      }
-    },
-  });
+  const refresh = useCallback(async () => {
+    setUser(readDemoSession());
+  }, []);
 
   const signIn = useCallback(() => {
+    writeDemoSession(DEFAULT_DEMO_USER);
+    setUser(DEFAULT_DEMO_USER);
+  }, []);
+
+  const logout = useCallback(async () => {
+    clearDemoSession();
+    setUser(null);
     if (typeof window !== "undefined") {
-      window.location.href = getLoginUrl();
+      window.location.href = "/";
     }
   }, []);
 
   return useMemo(
     () => ({
-      user: meQuery.data ?? null,
-      loading: meQuery.isLoading,
-      error: meQuery.error ?? null,
-      isAuthenticated: Boolean(meQuery.data),
-      refresh: meQuery.refetch,
+      user,
+      loading: false,
+      error: null,
+      isAuthenticated: Boolean(user),
+      refresh,
       signIn,
-      logout: logoutMutation.mutateAsync,
+      logout,
     }),
-    [meQuery.data, meQuery.error, meQuery.isLoading, meQuery.refetch, signIn, logoutMutation.mutateAsync],
+    [user, refresh, signIn, logout],
   );
 }
