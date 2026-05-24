@@ -36,7 +36,7 @@ export default function Home() {
             <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-600 to-blue-700 flex items-center justify-center">
               <span className="text-white font-bold text-sm">IP</span>
             </div>
-            <span className="font-semibold text-lg">IP Licensing</span>
+            <span className="font-semibold text-lg">IP Licensing (Demo Mode)</span>
           </div>
           <button onClick={() => setLocation("/sign-in")} className="text-sm font-medium hover:text-accent transition-colors">
             Sign In
