@@ -1,74 +1,38 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { getLoginUrl } from "@/const";
+import { trpc } from "@/lib/trpc";
+import { useCallback, useMemo } from "react";
 
-export type DemoUserRole = "licensor" | "licensee" | "reviewer";
+export function useAuth() {
+  const meQuery = trpc.auth.me.useQuery(undefined, {
+    retry: false,
+    staleTime: 60_000,
+  });
 
-export type DemoUser = {
-  id: string;
-  name: string;
-  email: string;
-  role: DemoUserRole;
-};
+  const logoutMutation = trpc.auth.logout.useMutation({
+    onSuccess: async () => {
+      await meQuery.refetch();
+      if (typeof window !== "undefined") {
+        window.location.href = "/";
+      }
+    },
+  });
 
-const AUTH_STORAGE_KEY = "demo-auth-user";
-
-function readStoredUser(): DemoUser | null {
-  if (typeof window === "undefined") return null;
-  const raw = localStorage.getItem(AUTH_STORAGE_KEY);
-  if (!raw) return null;
-  try {
-    return JSON.parse(raw) as DemoUser;
-  } catch {
-    return null;
-  }
-}
-
-type UseAuthOptions = {
-  redirectOnUnauthenticated?: boolean;
-  redirectPath?: string;
-};
-
-export function useAuth(options?: UseAuthOptions) {
-  const { redirectOnUnauthenticated = false, redirectPath = "/sign-in" } = options ?? {};
-  const [user, setUser] = useState<DemoUser | null>(() => readStoredUser());
-
-  useEffect(() => {
-    const sync = () => setUser(readStoredUser());
-    window.addEventListener("storage", sync);
-    return () => window.removeEventListener("storage", sync);
+  const signIn = useCallback(() => {
+    if (typeof window !== "undefined") {
+      window.location.href = getLoginUrl();
+    }
   }, []);
-
-  const signIn = useCallback((nextUser: DemoUser) => {
-    localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(nextUser));
-    setUser(nextUser);
-  }, []);
-
-  const logout = useCallback(async () => {
-    localStorage.removeItem(AUTH_STORAGE_KEY);
-    setUser(null);
-  }, []);
-
-  const refresh = useCallback(() => {
-    setUser(readStoredUser());
-  }, []);
-
-  useEffect(() => {
-    if (!redirectOnUnauthenticated) return;
-    if (user) return;
-    if (typeof window === "undefined") return;
-    if (window.location.pathname === redirectPath) return;
-    window.location.href = redirectPath;
-  }, [redirectOnUnauthenticated, redirectPath, user]);
 
   return useMemo(
     () => ({
-      user,
-      loading: false,
-      error: null,
-      isAuthenticated: Boolean(user),
-      refresh,
+      user: meQuery.data ?? null,
+      loading: meQuery.isLoading,
+      error: meQuery.error ?? null,
+      isAuthenticated: Boolean(meQuery.data),
+      refresh: meQuery.refetch,
       signIn,
-      logout,
+      logout: logoutMutation.mutateAsync,
     }),
-    [user, refresh, signIn, logout],
+    [meQuery.data, meQuery.error, meQuery.isLoading, meQuery.refetch, signIn, logoutMutation.mutateAsync],
   );
 }

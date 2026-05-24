@@ -17,7 +17,8 @@ export async function createIpAsset(data: InsertIpAsset) {
   if (!db) throw new Error("Database not available");
 
   const result = await db.insert(ipAssets).values(data);
-  return result;
+  const id = Number((result as any).insertId ?? (result as any)[0]?.insertId ?? 0);
+  return { id };
 }
 
 /**

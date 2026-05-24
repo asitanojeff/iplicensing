@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { protectedProcedure, router } from "../_core/trpc";
 import * as assetBank from "../features/assetBank";
+import { storagePut } from "../storage";
 
 export const assetsRouter = router({
   // List all assets for licensor
@@ -37,7 +38,7 @@ export const assetsRouter = router({
         throw new Error("Unauthorized");
       }
 
-      return await assetBank.createIpAsset({
+      const created = await assetBank.createIpAsset({
         licensorId: ctx.user.id,
         name: input.name,
         description: input.description,
@@ -45,6 +46,8 @@ export const assetsRouter = router({
         category: input.category,
         status: "active",
       });
+
+      return { id: created.id };
     }),
 
   // Get asset versions
@@ -80,6 +83,41 @@ export const assetsRouter = router({
         uploadedBy: ctx.user.id,
         downloadCount: 0,
       });
+    }),
+
+  // Upload a file and create a new asset version record
+  uploadFile: protectedProcedure
+    .input(
+      z.object({
+        assetId: z.number(),
+        fileName: z.string().min(1),
+        mimeType: z.string().min(1),
+        base64: z.string().min(1),
+        fileSize: z.number().int().positive(),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      if (ctx.user?.role !== "licensor" && ctx.user?.role !== "admin") {
+        throw new Error("Unauthorized");
+      }
+
+      const bytes = Buffer.from(input.base64, "base64");
+      const uploaded = await storagePut(`assets/${input.assetId}/${input.fileName}`, bytes, input.mimeType);
+      const versions = await assetBank.getAssetVersions(input.assetId);
+      const nextVersion = versions.length + 1;
+
+      await assetBank.createAssetVersion({
+        assetId: input.assetId,
+        versionNumber: nextVersion,
+        storageKey: uploaded.key,
+        storageUrl: uploaded.url,
+        fileSize: input.fileSize,
+        mimeType: input.mimeType,
+        uploadedBy: ctx.user.id,
+        downloadCount: 0,
+      });
+
+      return uploaded;
     }),
 
   // Grant permission to licensee
