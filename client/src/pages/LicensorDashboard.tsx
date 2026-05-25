@@ -63,16 +63,16 @@ export default function LicensorDashboard() {
           <Card className="p-6">
             <h3 className="text-lg font-semibold mb-4">Quick Actions</h3>
             <div className="space-y-3">
-              <Button variant="outline" className="w-full justify-start" onClick={() => (window.location.href = "/assets")}>
+              <Button variant="outline" className="w-full justify-start" onClick={() => (window.location.assign("/assets"))}>
                 Go to Assets
               </Button>
-              <Button variant="outline" className="w-full justify-start" onClick={() => (window.location.href = "/contracts")}>
+              <Button variant="outline" className="w-full justify-start" onClick={() => (window.location.assign("/contracts"))}>
                 Go to Contracts
               </Button>
-              <Button variant="outline" className="w-full justify-start" onClick={() => (window.location.href = "/approvals")}>
+              <Button variant="outline" className="w-full justify-start" onClick={() => (window.location.assign("/approvals"))}>
                 Go to Approvals
               </Button>
-              <Button variant="outline" className="w-full justify-start" onClick={() => (window.location.href = "/royalties")}>
+              <Button variant="outline" className="w-full justify-start" onClick={() => (window.location.assign("/royalties"))}>
                 Go to Royalties
               </Button>
             </div>

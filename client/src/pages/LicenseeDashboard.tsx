@@ -59,18 +59,10 @@ export default function LicenseeDashboard() {
         <Card className="p-6">
           <h3 className="text-lg font-semibold mb-4">Quick Actions</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-            <Button variant="outline" className="justify-start">
-              Download Assets
-            </Button>
-            <Button variant="outline" className="justify-start">
-              Submit Product
-            </Button>
-            <Button variant="outline" className="justify-start">
-              Submit Royalty Report
-            </Button>
-            <Button variant="outline" className="justify-start">
-              Manage Labels
-            </Button>
+            <Button variant="outline" className="justify-start" onClick={() => window.location.assign("/my-assets")}>Download Assets</Button>
+            <Button variant="outline" className="justify-start" onClick={() => window.location.assign("/my-submissions")}>Submit Product</Button>
+            <Button variant="outline" className="justify-start" onClick={() => window.location.assign("/my-royalties")}>Submit Royalty Report</Button>
+            <Button variant="outline" className="justify-start" onClick={() => window.location.assign("/my-labels")}>Manage Labels</Button>
           </div>
         </Card>
       </div>

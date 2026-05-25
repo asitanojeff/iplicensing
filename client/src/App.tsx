@@ -22,9 +22,11 @@ function Router() {
     <Switch>
       <Route path="/" component={Home} />
       <Route path="/sign-in" component={SignIn} />
+      <Route path="/login" component={SignIn} />
       <Route path="/onboarding" component={Onboarding} />
 
       <Route path="/dashboard" component={LicensorDashboard} />
+      <Route path="/licensor-dashboard" component={LicensorDashboard} />
       <Route path="/assets" component={AssetBank} />
       <Route path="/contracts" component={ContractManagement} />
       <Route path="/approvals" component={ProductApprovals} />
@@ -32,6 +34,7 @@ function Router() {
       <Route path="/analytics" component={Analytics} />
 
       <Route path="/my-dashboard" component={LicenseeDashboard} />
+      <Route path="/licensee-dashboard" component={LicenseeDashboard} />
       <Route path="/my-assets" component={AssetBank} />
       <Route path="/my-submissions" component={ProductApprovals} />
       <Route path="/my-royalties" component={RoyaltyReports} />
